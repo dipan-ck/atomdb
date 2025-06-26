@@ -85,3 +85,61 @@ func trimLineEnd(s string) string {
 	bs = bytes.TrimSuffix(bs, []byte("\n"))
 	return string(bs)
 }
+
+func ReadRESP(reader *bufio.Reader) ([]byte, error) {
+
+	var buff bytes.Buffer
+
+	firstLine, err := reader.ReadString('\n')
+
+	if err != nil {
+		return nil, err
+	}
+
+	buff.WriteString(firstLine)
+
+	if firstLine[0] != '*' {
+		return nil, errors.New("invalid RESP array prefix")
+	}
+
+	arrayLength, err := strconv.Atoi(trimLineEnd(firstLine[1:]))
+
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < arrayLength; i++ {
+
+		ruleLine, err := reader.ReadString('\n')
+
+		if err != nil {
+			return nil, err
+		}
+
+		buff.WriteString(ruleLine)
+
+		if ruleLine[0] != '$' {
+			return nil, errors.New("expected $ for bulk string")
+		}
+
+		strCount, err := strconv.Atoi(trimLineEnd(ruleLine[1:]))
+
+		if err != nil {
+			return nil, err
+		}
+
+		data := make([]byte, strCount+2)
+
+		_, err = reader.Read(data)
+
+		if err != nil {
+			return nil, err
+		}
+
+		buff.Write(data)
+
+	}
+
+	return buff.Bytes(), nil
+
+}

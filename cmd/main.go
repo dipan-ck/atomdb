@@ -1,18 +1,17 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
-	"github.com/dipan-ck/redis-clone-golang.git/internal/resp"
+	"github.com/dipan-ck/redis-clone-golang.git/internal/server"
 )
 
 func main() {
-	raw := []byte("*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$5\r\ndipan\r\n")
 
-	parsed, err := resp.RespParsing(raw)
+	err := server.StartServer("0.0.0.0:6300")
+
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	fmt.Println(parsed)
 }
