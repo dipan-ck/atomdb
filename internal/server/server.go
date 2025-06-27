@@ -13,6 +13,7 @@ type client struct {
 	reader          *bufio.Reader
 	isAuthenticated bool
 	remoteAddr      string
+	secretKey       string
 }
 
 var authenticatedUser = make(map[string]string)
@@ -82,6 +83,7 @@ func handleConnection(conn net.Conn) error {
 				} else {
 					authenticatedUser[SECRET] = user.remoteAddr
 					user.isAuthenticated = true
+					user.secretKey = SECRET
 					user.conn.Write([]byte(fmt.Sprintf("+OK Registered & Authenticated with Secret: %s and RemoteAddr: %s\r\n", SECRET, user.remoteAddr)))
 				}
 
@@ -89,8 +91,8 @@ func handleConnection(conn net.Conn) error {
 				user.conn.Write([]byte("-NOAUTH Please authenticate with AUTH <secret>\r\n"))
 			}
 		} else {
-			fmt.Println("📦 Parsed Command:", parsedSlice)
-			user.conn.Write([]byte("+OK\r\n"))
+			fmt.Println("Parsed Command:", parsedSlice)
+			HandleCommand(parsedSlice, user)
 		}
 
 	}

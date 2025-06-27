@@ -1,0 +1,50 @@
+package server
+
+import "sync"
+
+var (
+	globalStore = make(map[string]map[string]string)
+	mut         sync.RWMutex
+)
+
+func GetKey(user *client, key string) (string, bool) {
+
+	mut.RLock()
+	defer mut.RUnlock()
+
+	secretKey := user.secretKey
+
+	_, exists := globalStore[secretKey]
+
+	if exists {
+		val, ok := globalStore[secretKey][key]
+		return val, ok
+	} else {
+		return "", false
+	}
+
+}
+
+func SetKey(user *client, key string, value string) bool {
+
+	mut.Lock()
+	defer mut.Unlock()
+
+	secretKey := user.secretKey
+
+	_, exists := globalStore[secretKey]
+
+	if exists {
+		globalStore[secretKey][key] = value
+		return true
+	} else {
+
+		globalStore[secretKey] = make(map[string]string)
+		globalStore[secretKey][key] = value
+		return true
+
+	}
+
+	return false
+
+}
