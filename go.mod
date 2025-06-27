@@ -1,3 +1,3 @@
-module github.com/dipan-ck/redis-clone-golang.git
+module github.com/dipan-ck/atomdb.git
 
 go 1.24.4

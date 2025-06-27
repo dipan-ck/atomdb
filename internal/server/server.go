@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/dipan-ck/redis-clone-golang.git/internal/resp"
+	"github.com/dipan-ck/atomdb.git/internal/resp"
 )
 
 type client struct {

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/dipan-ck/redis-clone-golang.git/internal/server"
+	"github.com/dipan-ck/atomdb.git/internal/server"
 )
 
 func main() {
