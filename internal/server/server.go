@@ -36,6 +36,7 @@ func StartServer(port string) error {
 			continue // 🔁 Do not exit the server loop!
 		}
 
+		TTLWatcher()
 		go handleConnection(userConn)
 
 	}

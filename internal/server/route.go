@@ -45,6 +45,20 @@ func HandleCommand(cmdString []string, user *client) {
 			}
 		}
 
+	case "EXPIRE":
+		if len(cmdString) < 2 {
+			user.conn.Write([]byte("-ERR wrong number of arguments for 'EXPIRE'\r\n"))
+		} else {
+			setSuccess := SetTTL(user, cmdString[1], cmdString[2])
+
+			if setSuccess {
+				user.conn.Write([]byte("+OK\r\n"))
+			} else {
+				user.conn.Write([]byte("$-1\r\n"))
+				return
+			}
+		}
+
 	default:
 		user.conn.Write([]byte(fmt.Sprintf("-ERR unknown command '%s'\r\n", cmdString[0])))
 
