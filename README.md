@@ -56,7 +56,7 @@ I built AtomDB to learn:
 2. **Run the server**
 
    ```bash
-   go run server.go
+   go run main.go
    ```
 3. **Connect with Redis CLI**
 
