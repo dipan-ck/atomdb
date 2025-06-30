@@ -61,7 +61,7 @@ I built AtomDB to learn:
 3. **Connect with Redis CLI**
 
    ```bash
-   redis-cli -p 8080
+   redis-cli -p 6300
    ```
 4. **Authenticate**
 
@@ -96,21 +96,43 @@ I built AtomDB to learn:
   4. Else → pass to `HandleCommand`
 
   ---
-
 ### 2. RESP Parser (`parser.go`)
 
-Parses Redis Serialization Protocol:
+The RESP (Redis Serialization Protocol) parser is a crucial component of our database, responsible for interpreting the data sent by Redis clients. Here's a detailed breakdown of how it works:
 
 ```go
 func ReadRESP(reader *bufio.Reader) ([]byte, error) { … }
 func RespParsing(input []byte) ([]string, error) { … }
 ```
 
-* Reads `*<count> ` header
-* For each item, reads `$<len> ` then payload
-* Returns slice like `["SET","name","Alice"]`
+#### How Redis Sends Data
+Redis uses the RESP protocol to communicate with clients. Commands are sent as arrays, where each element is a bulk string. For example, the command `SET name Alice` is sent as:
 
----
+```
+*3
+$3
+SET
+$4
+name
+$5
+Alice
+```
+
+- `*3` indicates an array of three elements.
+- `$3` followed by `SET` indicates a bulk string of length 3.
+- Similarly, `$4` and `$5` indicate the lengths of the subsequent strings `name` and `Alice`.
+
+#### Breaking Data into Slices
+The `RespParsing` function processes this input to extract the command and its arguments:
+
+1. **Read the Array Header**: The function starts by reading the `*<count>` header to determine the number of elements.
+2. **Parse Each Element**: For each element, it reads the `$<len>` header to know how many bytes to read for the actual data.
+3. **Store in Slice**: Each parsed element is stored in a slice, resulting in a structure like `[]string{"SET", "name", "Alice"}`.
+
+This parsing allows the server to understand and execute commands sent by the client, maintaining the expected behavior.
+
+
+        
 
 ### 3. Command Router (`route.go`)
 
