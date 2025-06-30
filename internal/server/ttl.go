@@ -11,7 +11,7 @@ var (
 	ttlmutex sync.RWMutex
 )
 
-func TTLWatcher() {
+func TTLWatcher(lru *LRUList) {
 
 	go func() {
 		for {
@@ -24,6 +24,7 @@ func TTLWatcher() {
 				for key, expiery := range keys {
 					if time.Now().After(expiery) {
 						delete(globalStore[secretKey], key)
+						RemoveNode(lru, key)
 						delete(TTLmap[secretKey], key)
 					}
 				}

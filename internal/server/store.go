@@ -18,6 +18,7 @@ func GetKey(user *client, key string) (string, bool) {
 
 	if exists {
 		val, ok := globalStore[secretKey][key]
+		RecentlyUsed(user.LRU, key)
 		return val, ok
 	} else {
 		return "", false
@@ -31,20 +32,21 @@ func SetKey(user *client, key string, value string) bool {
 	defer mut.Unlock()
 
 	secretKey := user.secretKey
+	valMap, exists := globalStore[secretKey]
 
-	_, exists := globalStore[secretKey]
-
-	if exists {
-		globalStore[secretKey][key] = value
-		return true
-	} else {
-
+	if !exists {
 		globalStore[secretKey] = make(map[string]string)
-		globalStore[secretKey][key] = value
-		return true
-
+		valMap = globalStore[secretKey]
 	}
 
-	return false
+	if _, keyExists := valMap[key]; keyExists {
+		valMap[key] = value
+		RecentlyUsed(user.LRU, key)
+	} else {
+		valMap[key] = value
+		AddNode(user.LRU, key, secretKey)
+	}
+
+	return true
 
 }

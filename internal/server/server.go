@@ -14,6 +14,7 @@ type client struct {
 	isAuthenticated bool
 	remoteAddr      string
 	secretKey       string
+	LRU             *LRUList
 }
 
 var authenticatedUser = make(map[string]string)
@@ -36,7 +37,6 @@ func StartServer(port string) error {
 			continue // 🔁 Do not exit the server loop!
 		}
 
-		TTLWatcher()
 		go handleConnection(userConn)
 
 	}
@@ -46,11 +46,14 @@ func StartServer(port string) error {
 func handleConnection(conn net.Conn) error {
 	defer conn.Close()
 
+	userLRU := CreateLRU()
+
 	user := &client{
 		conn:            conn,
 		reader:          bufio.NewReader(conn),
 		isAuthenticated: false,
 		remoteAddr:      conn.RemoteAddr().String(),
+		LRU:             userLRU,
 	}
 
 	fmt.Println("📥 New client connected:", user.remoteAddr)
@@ -85,6 +88,8 @@ func handleConnection(conn net.Conn) error {
 					authenticatedUser[SECRET] = user.remoteAddr
 					user.isAuthenticated = true
 					user.secretKey = SECRET
+
+					TTLWatcher(user.LRU)
 					user.conn.Write([]byte(fmt.Sprintf("+OK Registered & Authenticated with Secret: %s and RemoteAddr: %s\r\n", SECRET, user.remoteAddr)))
 				}
 
